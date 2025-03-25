@@ -67,14 +67,17 @@ python insert_data.py --records 10 --table all
 
 ---
 
-## 📅 Kommende Features
+## 📅 Fortschritt & Kommende Features
 
 - [x] Infrastruktur mit Terraform
-- [x] Datenexport mit Lambda
-- [ ] Zeitbasierter Trigger via EventBridge
-- [ ] Datenverarbeitung mit Glue
-- [ ] Persistenz in SQL-DB (RDS / Redshift)
-- [ ] CI/CD Pipeline (GitHub Actions)
+- [x] Datenexport mit AWS Lambda
+- [x] Zeitbasierter Trigger via EventBridge
+- [x] Datenverarbeitung mit AWS Glue (Datenkatalog)
+- [ ] Glue Job für Transformation (z. B. Parquet, CSV)
+- [ ] SQL-Persistenz (AWS RDS oder Redshift)
+- [ ] Datenabfrage mit Athena oder QuickSight
+- [ ] CI/CD Pipeline mit GitHub Actions
+- [ ] Visuelle Architektur-Doku (draw.io)
 
 ---
 
