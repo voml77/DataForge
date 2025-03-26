@@ -73,9 +73,9 @@ python insert_data.py --records 10 --table all
 - [x] Datenexport mit AWS Lambda
 - [x] Zeitbasierter Trigger via EventBridge
 - [x] Datenverarbeitung mit AWS Glue (Datenkatalog)
-- [ ] Glue Job für Transformation (z. B. Parquet, CSV)
+- [x] Glue Job für Transformation (Parquet-Konvertierung)
+- [x] Datenabfrage mit Athena auf Parquet
 - [ ] SQL-Persistenz (AWS RDS oder Redshift)
-- [ ] Datenabfrage mit Athena oder QuickSight
 - [ ] CI/CD Pipeline mit GitHub Actions
 - [ ] Visuelle Architektur-Doku (draw.io)
 
