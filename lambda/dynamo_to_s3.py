@@ -35,11 +35,13 @@ def lambda_handler(event, context):
         timestamp = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H-%M-%S')
         filename = f"{table_name}_export_{timestamp}.json"
 
-        # Upload in S3
+        # Zeilenweises Schreiben im JSONL-Stil (line-delimited JSON)
+        json_lines = "\n".join(json.dumps(item, cls=DecimalEncoder) for item in items)
+
         s3.put_object(
             Bucket=bucket_name,
             Key=filename,
-            Body=json.dumps(items, cls=DecimalEncoder),
+            Body=json_lines,
             ContentType='application/json'
         )
 

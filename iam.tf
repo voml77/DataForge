@@ -59,6 +59,7 @@ resource "aws_lambda_function" "dynamo_to_s3" {
   role          = aws_iam_role.lambda_exec_role.arn
   handler       = "dynamo_to_s3.lambda_handler"
   runtime       = "python3.12"
+  timeout       = 30
 
   filename         = "${path.module}/lambda/dynamo_to_s3.zip"
   source_code_hash = filebase64sha256("${path.module}/lambda/dynamo_to_s3.zip")
