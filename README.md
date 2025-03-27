@@ -73,13 +73,23 @@ python insert_data.py --records 10 --table all
 - [x] Datenexport mit AWS Lambda
 - [x] Zeitbasierter Trigger via EventBridge
 - [x] Datenverarbeitung mit AWS Glue (Datenkatalog)
-- [x] Glue Job für Transformation (Parquet-Konvertierung)
-- [x] Datenabfrage mit Athena auf Parquet
+- [x] Glue Jobs für Transformation (Parquet für Structured, JSON, Key-Value)
+- [x] Datenabfrage mit Athena (JSON & Parquet)
 - [ ] SQL-Persistenz (AWS RDS oder Redshift)
 - [ ] CI/CD Pipeline mit GitHub Actions
 - [ ] Visuelle Architektur-Doku (draw.io)
 
 ---
+
+## 📊 Datenquellen & Formate
+
+- **Structured:** Sensor-Messdaten (ID, Timestamp, Value, Status) → Parquet
+- **JSON Events:** Benutzeraktionen (Login, Upload etc.) → Parquet
+- **Key-Value Configs:** Versionen & Parameter → Parquet
+
+Alle Daten werden über AWS Glue katalogisiert und sind per Athena abfragbar.
+
+--- 
 
 ## 🧠 Autor
 **Vadim Ott** – Data Engineer in Progress 👨‍💻  
