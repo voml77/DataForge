@@ -41,12 +41,20 @@ Daten automatisiert erfassen, speichern, transformieren – und das cloudbasiert
 ```
 DataForge/
 ├── lambda/                 # Lambda-Code (Python)
-├── insert_data.py          # Python-Skript für Testdaten
-├── iam.tf                  # IAM-Rollen & Policies
-├── lambda.tf               # Lambda Deployment
-├── dynamodb.tf             # DynamoDB-Tabellen
-├── outputs.tf              # (Optional) Outputs
-├── variables.tf            # (Optional) Variablen
+│   └── dynamo_to_s3.py
+├── scripts/                # Glue-Jobs & CSV-Exporter
+│   ├── glue_job.py
+│   └── insert_data.py
+├── data/                   # JSON/CSV-Testdaten
+│   ├── structured_data.jsonl
+│   ├── localfile.json
+│   └── output.json
+├── terraform/              # Infrastruktur mit Terraform
+│   ├── main.tf
+│   ├── glue.tf
+│   ├── iam.tf
+│   ├── dynamodb.tf
+│   ├── ...
 ├── .gitignore
 └── README.md
 ```
@@ -78,6 +86,13 @@ python insert_data.py --records 10 --table all
 - [ ] SQL-Persistenz (AWS RDS oder Redshift)
 - [ ] CI/CD Pipeline mit GitHub Actions
 - [ ] Visuelle Architektur-Doku (draw.io)
+
+### 🔧 Geplante Erweiterungen (Phase 2)
+
+- CSV-basierte ETL-Pipeline mit Glue → RDS
+- Aufbau eines Mini-Data Warehouses (SQL)
+- Visualisierung mit Power BI oder QuickSight
+- GitHub Actions für CI/CD Checks & Deployment
 
 ---
 

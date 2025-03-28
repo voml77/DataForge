@@ -14,8 +14,8 @@ job = Job(glueContext)
 job.init(args["JOB_NAME"], args)
 
 # S3 Input & Output-Pfade
-input_path = "s3://mein-test-bucket-123456789/"
-output_path = "s3://mein-test-bucket-123456789/parquet/"
+input_path = "s3://dataforge-model-storage/structured/data.json"
+output_path = "s3://dataforge-model-storage/parquet/structured/"
 
 # Zeilenweise als Text lesen (JSONL)
 lines_df = spark.read.text(input_path)

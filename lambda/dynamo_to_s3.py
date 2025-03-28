@@ -29,7 +29,10 @@ def lambda_handler(event, context):
         items = response.get('Items', [])
 
         if not items:
+            print("Scan erfolgreich, aber keine Items gefunden.")
             return {"statusCode": 200, "body": "Keine Daten zum Exportieren gefunden."}
+
+        print(f"{len(items)} Items aus DynamoDB gelesen: {items[:3]}...")  # Nur die ersten 3 anzeigen
 
         # Dateiname mit Zeitstempel
         timestamp = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H-%M-%S')
@@ -40,10 +43,11 @@ def lambda_handler(event, context):
 
         s3.put_object(
             Bucket=bucket_name,
-            Key=filename,
+            Key = f"keyvalue/{filename}",
             Body=json_lines,
             ContentType='application/json'
         )
+        print(f"Datei {filename} erfolgreich in {bucket_name} geschrieben.")
 
         return {
             "statusCode": 200,
