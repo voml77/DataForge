@@ -83,13 +83,13 @@ python insert_data.py --records 10 --table all
 - [x] Datenverarbeitung mit AWS Glue (Datenkatalog)
 - [x] Glue Jobs für Transformation (Parquet für Structured, JSON, Key-Value)
 - [x] Datenabfrage mit Athena (JSON & Parquet)
-- [ ] SQL-Persistenz (AWS RDS oder Redshift)
+- [x] SQL-Persistenz mit AWS RDS (MySQL)
 - [ ] CI/CD Pipeline mit GitHub Actions
 - [ ] Visuelle Architektur-Doku (draw.io)
 
 ### 🔧 Geplante Erweiterungen (Phase 2)
 
-- CSV-basierte ETL-Pipeline mit Glue → RDS
+- CSV-basierte ETL-Pipeline mit Glue → RDS (bereit zur Umsetzung)
 - Aufbau eines Mini-Data Warehouses (SQL)
 - Visualisierung mit Power BI oder QuickSight
 - GitHub Actions für CI/CD Checks & Deployment
@@ -115,3 +115,15 @@ Alle Daten werden über AWS Glue katalogisiert und sind per Athena abfragbar.
 ## 📸 Screenshots / Diagramme (optional einfügen)
 
 > ⚠️ Platzhalter – hier können später S3-Dateien, Terraform-Ausgaben, oder ein draw.io-Diagramm ergänzt werden.
+
+---
+
+## 💸 Hinweis zu Kosten / Ressourcen
+
+Die AWS RDS Instanz läuft dauerhaft, sofern sie nicht gestoppt oder gelöscht wird. Um unnötige Kosten zu vermeiden:
+
+- Nutze möglichst die Free Tier-Größe (`db.t3.micro`) – bereits gewählt
+- RDS verursacht Kosten **auch im Leerlauf** – ggf. regelmäßig stoppen
+- Speicherplatz (z. B. 20 GB) wird ebenfalls berechnet
+
+🔧 Empfehlung: Instanz manuell stoppen, wenn nicht aktiv verwendet (z. B. über die AWS Console)
