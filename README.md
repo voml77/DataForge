@@ -84,11 +84,13 @@ python insert_data.py --records 10 --table all
 - [x] Glue Jobs für Transformation (Parquet für Structured, JSON, Key-Value)
 - [x] Datenabfrage mit Athena (JSON & Parquet)
 - [x] SQL-Persistenz mit AWS RDS (MySQL)
+- [x] CSV zu Parquet (Glue Job für fact_appointments.csv)
 - [ ] CI/CD Pipeline mit GitHub Actions
 - [ ] Visuelle Architektur-Doku (draw.io)
 
 ### 🔧 Geplante Erweiterungen (Phase 2)
 
+- Direkter Glue Job Parquet → MySQL (RDS)
 - CSV-basierte ETL-Pipeline mit Glue → RDS (bereit zur Umsetzung)
 - Aufbau eines Mini-Data Warehouses (SQL)
 - Visualisierung mit Power BI oder QuickSight
@@ -101,6 +103,7 @@ python insert_data.py --records 10 --table all
 - **Structured:** Sensor-Messdaten (ID, Timestamp, Value, Status) → Parquet
 - **JSON Events:** Benutzeraktionen (Login, Upload etc.) → Parquet
 - **Key-Value Configs:** Versionen & Parameter → Parquet
+- CSV-Dateien: Faktendaten zu Terminen (fact_appointments.csv) → Parquet → MySQL
 
 Alle Daten werden über AWS Glue katalogisiert und sind per Athena abfragbar.
 
@@ -115,6 +118,7 @@ Alle Daten werden über AWS Glue katalogisiert und sind per Athena abfragbar.
 ## 📸 Screenshots / Diagramme (optional einfügen)
 
 > ⚠️ Platzhalter – hier können später S3-Dateien, Terraform-Ausgaben, oder ein draw.io-Diagramm ergänzt werden.
+> 🔧 Derzeit in Arbeit: draw.io-Diagramm zur End-to-End-Pipeline.
 
 ---
 

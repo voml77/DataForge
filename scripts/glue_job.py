@@ -47,4 +47,27 @@ glueContext.write_dynamic_frame.from_options(
     transformation_ctx="output"
 )
 
+if "job_type" in args and args["job_type"] == "rds_export":
+    # CSV-Datei aus S3 lesen
+    input_path = "s3://dataforge-model-storage/csv/fact_appointments.csv"
+    df = spark.read.option("header", "true").option("inferSchema", "true").csv(input_path)
+
+    # In DynamicFrame konvertieren
+    dyf = DynamicFrame.fromDF(df, glueContext, "dyf")
+
+    # In relationale Datenbank schreiben
+    glueContext.write_dynamic_frame.from_options(
+        frame=dyf,
+        connection_type="postgresql",
+        connection_options={
+            "url": "jdbc:postgresql://<RDS-ENDPOINT>:5432/<DBNAME>",
+            "user": "<USERNAME>",
+            "password": "<PASSWORD>",
+            "dbtable": "fact_appointments",
+            "customJdbcDriverS3Path": "s3://<bucket>/drivers/postgresql-42.2.18.jar",
+            "customJdbcDriverClassName": "org.postgresql.Driver"
+        },
+        transformation_ctx="rds_output"
+    )
+
 job.commit()

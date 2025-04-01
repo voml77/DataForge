@@ -90,3 +90,53 @@ resource "aws_glue_job" "structured_to_parquet" {
   max_retries        = 0
   timeout            = 10
 }
+
+resource "aws_glue_job" "parquet_to_rds" {
+  name     = "DataForgeParquetToRDS"
+  role_arn = aws_iam_role.glue_service_role.arn
+
+  command {
+    name            = "glueetl"
+    script_location = "s3://dataforge-model-storage/scripts/glue_job_parquet_to_rds.py"
+    python_version  = "3"
+  }
+
+  default_arguments = {
+    "--job-language"                      = "python"
+    "--TempDir"                           = "s3://dataforge-model-storage/temp/"
+    "--enable-continuous-cloudwatch-log" = "true"
+    "--extra-py-files"                    = ""
+    "--connection-name"                   = "dataforge-mysql-conn"
+  }
+
+  glue_version       = "4.0"
+  number_of_workers  = 2
+  worker_type        = "G.1X"
+  execution_class    = "STANDARD"
+  max_retries        = 0
+  timeout            = 10
+}
+
+resource "aws_glue_job" "csv_to_parquet" {
+  name     = "DataForgeCsvToParquet"
+  role_arn = aws_iam_role.glue_service_role.arn
+
+  command {
+    name            = "glueetl"
+    script_location = "s3://dataforge-model-storage/scripts/glue_job_csv_to_parquet.py"
+    python_version  = "3"
+  }
+
+  default_arguments = {
+    "--job-language"                      = "python"
+    "--TempDir"                           = "s3://dataforge-model-storage/temp/"
+    "--enable-continuous-cloudwatch-log" = "true"
+  }
+
+  glue_version       = "4.0"
+  number_of_workers  = 2
+  worker_type        = "G.1X"
+  execution_class    = "STANDARD"
+  max_retries        = 0
+  timeout            = 10
+}
