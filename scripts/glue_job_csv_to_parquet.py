@@ -5,6 +5,8 @@ from awsglue.context import GlueContext
 from awsglue.job import Job
 from pyspark.context import SparkContext
 
+description = "Glue Job: CSV → Parquet Export – wurde erfolgreich reinitialisiert"
+
 # Glue-Spezifische Initialisierung
 args = getResolvedOptions(sys.argv, ["JOB_NAME"])
 sc = SparkContext()
