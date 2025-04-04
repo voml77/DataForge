@@ -1,19 +1,19 @@
-data "aws_secretsmanager_secret_version" "rds_password" {
-  secret_id = "dataforge/rds/mysql_credentials"
+data "aws_secretsmanager_secret_version" "rds_credentials" {
+  secret_id = "dataforge/rds/credentials"
 }
 
 resource "aws_db_instance" "dataforge_mysql" {
-  identifier           = "dataforge-mysql"
+  identifier           = "dataforge-db"
   allocated_storage    = 20
   engine               = "mysql"
   engine_version       = "8.0"
   instance_class       = "db.t3.micro"
   db_name              = "dataforge"
-  username             = "vadimadmin"
-  password             = jsondecode(data.aws_secretsmanager_secret_version.rds_password.secret_string)["rds_password"]
+  username             = jsondecode(data.aws_secretsmanager_secret_version.rds_credentials.secret_string)["username"]
+  password             = jsondecode(data.aws_secretsmanager_secret_version.rds_credentials.secret_string)["password"]
   parameter_group_name = "default.mysql8.0"
   skip_final_snapshot  = true
-  publicly_accessible  = false
+  publicly_accessible  = true
   vpc_security_group_ids = [aws_security_group.dataforge_db_sg.id]
   db_subnet_group_name   = aws_db_subnet_group.dataforge_subnet_group.name
 }
@@ -36,7 +36,7 @@ resource "aws_security_group" "dataforge_db_sg" {
     from_port   = 3306
     to_port     = 3306
     protocol    = "tcp"
-    cidr_blocks = ["10.0.0.0/16"] # Optional: begrenzen auf dein internes Netz
+    cidr_blocks = ["82.135.77.122/32"] # Optional: begrenzen auf dein internes Netz
   }
 
   egress {

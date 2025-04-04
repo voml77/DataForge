@@ -44,6 +44,22 @@ resource "aws_iam_policy" "lambda_exec_policy" {
           "s3:PutObjectAcl"
         ],
         Resource = "*"
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "ec2:CreateNetworkInterface",
+          "ec2:DescribeNetworkInterfaces",
+          "ec2:DeleteNetworkInterface"
+        ],
+        Resource = "*"
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "s3:GetObject"
+        ],
+        Resource = "arn:aws:s3:::dataforge-model-storage/csv/*"
       }
     ]
   })
@@ -71,35 +87,7 @@ resource "aws_lambda_function" "dynamo_to_s3" {
     }
   }
 }
-resource "aws_iam_policy" "glue_exec_policy" {
-  name        = "DataForgeGluePolicy"
-  description = "Policy für Glue Zugriff auf S3 und RDS"
 
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Effect = "Allow",
-        Action = [
-          "s3:GetObject",
-          "s3:PutObject",
-          "s3:ListBucket"
-        ],
-        Resource = [
-          "arn:aws:s3:::dataforge-model-storage",
-          "arn:aws:s3:::dataforge-model-storage/*"
-        ]
-      },
-      {
-        Effect = "Allow",
-        Action = [
-          "rds:*"
-        ],
-        Resource = "*"
-      }
-    ]
-  })
-}
 resource "aws_iam_policy" "terraform_exec_policy" {
   name        = "DataForgeTerraformPolicy"
   description = "Policy für Terraform-Zugriffe auf AWS Ressourcen"
@@ -124,24 +112,53 @@ resource "aws_iam_policy" "terraform_exec_policy" {
     ]
   })
 }
-resource "aws_iam_policy" "dataforge_glue_s3_policy" {
-  name        = "DataForgeGlueS3ReadAccess"
-  description = "Erlaubt Glue das Lesen von Skripten im S3-Bucket dataforge-model-storage"
-  policy      = jsonencode({
-    Version = "2012-10-17"
+
+resource "aws_lambda_function" "csv_to_rds" {
+  function_name = "DataForge_CsvToRds"
+  role          = aws_iam_role.lambda_exec_role.arn
+  handler       = "csv_to_rds.lambda_handler"
+  runtime       = "python3.12"
+  timeout       = 300
+
+  filename         = "${path.module}/../lambda/csv_to_rds.zip"
+  source_code_hash = filebase64sha256("${path.module}/../lambda/csv_to_rds.zip")
+
+  vpc_config {
+    subnet_ids         = var.private_subnet_ids
+    security_group_ids = [aws_security_group.dataforge_db_sg.id]
+  }
+
+  environment {
+    variables = {
+      RDS_HOST     = aws_db_instance.dataforge_mysql.address
+      RDS_USER     = "vadimadmin"
+      RDS_USERNAME = jsondecode(data.aws_secretsmanager_secret_version.rds_credentials.secret_string)["username"]
+      RDS_PASSWORD = jsondecode(data.aws_secretsmanager_secret_version.rds_credentials.secret_string)["password"]
+      RDS_DB_NAME  = "dataforge"
+      S3_BUCKET    = "dataforge-model-storage"
+      CSV_KEY      = "csv/fact_appointments.csv"
+    }
+  }
+
+  depends_on = [aws_db_instance.dataforge_mysql]
+}
+resource "aws_iam_policy" "lambda_s3_csv_read_policy" {
+  name        = "DataForgeLambdaS3CSVReadAccess"
+  description = "Erlaubt dem Lambda-Executor das Lesen der CSV-Dateien im S3-Bucket"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
     Statement = [
       {
-        Effect = "Allow"
-        Action = [
-          "s3:GetObject"
-        ]
-        Resource = "arn:aws:s3:::dataforge-model-storage/scripts/*"
+        Effect   = "Allow",
+        Action   = ["s3:GetObject"],
+        Resource = "arn:aws:s3:::dataforge-model-storage/csv/*"
       }
     ]
   })
 }
-
-resource "aws_iam_role_policy_attachment" "attach_glue_s3_read" {
-  role       = aws_iam_role.glue_service_role.name
-  policy_arn = aws_iam_policy.dataforge_glue_s3_policy.arn
+resource "aws_iam_policy_attachment" "attach_lambda_s3_csv_read" {
+  name       = "AttachLambdaS3CSVReadPolicy"
+  roles      = [aws_iam_role.lambda_exec_role.name]
+  policy_arn = aws_iam_policy.lambda_s3_csv_read_policy.arn
 }

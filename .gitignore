@@ -21,4 +21,7 @@ __pycache__/
 *.log
 .DS_Store
 
+# dbt
+*.yml
+
 terraform/dev.auto.tfvars

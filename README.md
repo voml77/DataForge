@@ -12,15 +12,24 @@ Daten automatisiert erfassen, speichern, transformieren – und das cloudbasiert
 ```text
 +-------------+         +----------------+         +----------------+
 | DynamoDB    |  --->   | AWS Lambda     |  --->   | S3-Bucket       |
-| (Rohdaten)  |         | (Export)       |         | (Zwischenspeicher)|
+| (Rohdaten)  |         | (Export)       |         | (Staging Layer) |
 +-------------+         +----------------+         +----------------+
-                                                       ↓
-                                                 +-------------+
-                                                 | AWS Glue    |
-                                                 | (optional)  |
-                                                 +-------------+
-                                                       ↓
-                                                [SQL / Analytics]
+                                                         ↓
+                                                  +------------------+
+                                                  | AWS RDS (MySQL)  |
+                                                  | (Persistenz)     |
+                                                  +------------------+
+                                                         ↓
+                                                  +------------------+
+                                                  | dbt-Modelle:     |
+                                                  |  - fact_appointments |
+                                                  |  - dim_patient        |
+                                                  |  - dim_dentist        |
+                                                  |  - dim_treatment      |
+                                                  |  - appointment_financials |
+                                                  +------------------+
+                                                         ↓
+                                                 [Power BI / QS]
 ```
 
 ---
@@ -29,10 +38,12 @@ Daten automatisiert erfassen, speichern, transformieren – und das cloudbasiert
 
 - **Terraform** – Infrastruktur als Code
 - **AWS DynamoDB** – Speicherung strukturierter & semi-strukturierter Daten
-- **AWS Lambda (Python)** – Exportservice in S3
-- **S3** – JSON-Zwischenspeicher für Analyse
-- **AWS Glue (optional)** – Datenaufbereitung
+- **AWS Lambda (Python)** – Datenexport & Integration
+- **S3** – Staging Layer für strukturierte Daten
+- **AWS RDS (MySQL)** – relationale Persistenz
+- **dbt (Data Build Tool)** – Transformation & semantische Anreicherung
 - **GitHub** – CI/CD & Versionierung
+- **Power BI / QuickSight** – Visualisierung
 
 ---
 
@@ -41,21 +52,27 @@ Daten automatisiert erfassen, speichern, transformieren – und das cloudbasiert
 ```
 DataForge/
 ├── lambda/                 # Lambda-Code (Python)
-│   └── dynamo_to_s3.py
-├── scripts/                # Glue-Jobs & CSV-Exporter
-│   ├── glue_job.py
+│   ├── dynamo_to_s3.py
+│   └── csv_to_rds.py
+├── scripts/                # Jobs & Hilfsskripte
+│   ├── export_to_csv.py
 │   └── insert_data.py
 ├── data/                   # JSON/CSV-Testdaten
-│   ├── structured_data.jsonl
-│   ├── localfile.json
-│   └── output.json
+│   └── csv/
+│       ├── fact_appointments.csv
+│       └── structured_export.csv
 ├── terraform/              # Infrastruktur mit Terraform
 │   ├── main.tf
-│   ├── glue.tf
+│   ├── rds.tf
 │   ├── iam.tf
 │   ├── dynamodb.tf
-│   ├── ...
-├── .gitignore
+│   ├── network.tf
+│   └── ...
+├── models/                 # dbt-Modelle für DWH
+│   ├── appointment_financials.sql
+│   ├── dim_patient.sql
+│   ├── dim_dentist.sql
+│   ├── dim_treatment.sql
 └── README.md
 ```
 
@@ -80,19 +97,19 @@ python insert_data.py --records 10 --table all
 - [x] Infrastruktur mit Terraform
 - [x] Datenexport mit AWS Lambda
 - [x] Zeitbasierter Trigger via EventBridge
-- [x] Datenverarbeitung mit AWS Glue (Datenkatalog)
-- [x] Glue Jobs für Transformation (Parquet für Structured, JSON, Key-Value)
-- [x] Datenabfrage mit Athena (JSON & Parquet)
+- [x] Datenverarbeitung mit AWS Glue (frühere Implementierung – entfernt)
 - [x] SQL-Persistenz mit AWS RDS (MySQL)
-- [x] CSV zu Parquet (Glue Job für fact_appointments.csv)
+- [x] CSV zu Parquet (ehemals Glue Job) – wird neu gedacht
+- [x] Datenintegration über Lambda in RDS (funktioniert, wird weiter verbessert)
+- [x] Transformationen & Datenaufwertung mit dbt
+- [x] Aufbau eines Mini-Data Warehouses (Fact & Dimensions)
+- [x] Erstellung eines KPI-Views (appointment_financials) mit dbt
 - [ ] CI/CD Pipeline mit GitHub Actions
 - [ ] Visuelle Architektur-Doku (draw.io)
 
-### 🔧 Geplante Erweiterungen (Phase 2)
+### 🧭 Geplante Erweiterungen (Phase 2 – reloaded)
 
-- Direkter Glue Job Parquet → MySQL (RDS)
-- CSV-basierte ETL-Pipeline mit Glue → RDS (bereit zur Umsetzung)
-- Aufbau eines Mini-Data Warehouses (SQL)
+- Datenintegration via Lambda → RDS (statt Glue)
 - Visualisierung mit Power BI oder QuickSight
 - GitHub Actions für CI/CD Checks & Deployment
 
@@ -105,7 +122,10 @@ python insert_data.py --records 10 --table all
 - **Key-Value Configs:** Versionen & Parameter → Parquet
 - CSV-Dateien: Faktendaten zu Terminen (fact_appointments.csv) → Parquet → MySQL
 
-Alle Daten werden über AWS Glue katalogisiert und sind per Athena abfragbar.
+Ursprünglich wurden alle Daten via AWS Glue katalogisiert – mittlerweile setzen wir auf einen schlanken Lambda→RDS Flow mit optionaler dbt-Transformation.
+
+Zusätzlich wurde eine Data Warehouse-Schicht auf Basis der Faktentabelle `fact_appointments` modelliert, inklusive der Dimensionstabellen `dim_patient`, `dim_dentist`, `dim_treatment` sowie einer analytischen View `appointment_financials`.
+Die Transformationen erfolgen über dbt und können modular erweitert werden.
 
 --- 
 
@@ -130,4 +150,11 @@ Die AWS RDS Instanz läuft dauerhaft, sofern sie nicht gestoppt oder gelöscht w
 - RDS verursacht Kosten **auch im Leerlauf** – ggf. regelmäßig stoppen
 - Speicherplatz (z. B. 20 GB) wird ebenfalls berechnet
 
-🔧 Empfehlung: Instanz manuell stoppen, wenn nicht aktiv verwendet (z. B. über die AWS Console)
+🔧 Empfehlung: Instanz manuell stoppen, wenn nicht aktiv verwendet (z. B. über die AWS Console)  
+🔁 Hinweis: Wenn du die RDS-Instanz später erneut aktivierst, prüfe:
+- Ist sie wieder als „öffentlich zugänglich“ markiert (Publicly Accessible = Yes)?
+- Ist die passende Inbound-Regel in der Security Group gesetzt (MySQL-Port 3306 für deine aktuelle IP)?
+
+📌 Beachte: Nach dem Neustart der RDS-Instanz muss häufig erneut:
+- „Publicly Accessible“ auf „Yes“ gesetzt werden
+- Eine Inbound-Regel für deine aktuelle IP-Adresse freigegeben werden (Port 3306, TCP)
