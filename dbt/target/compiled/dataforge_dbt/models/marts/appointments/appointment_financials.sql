@@ -10,13 +10,17 @@ SELECT
     insurance_coverage,
     patient_payment,
     
-    -- Berechneter Anteil, den der Patient selbst zahlt
     ROUND((patient_payment / total_cost) * 100, 2) AS patient_share_percent,
+    ROUND(((insurance_coverage + patient_payment) / total_cost) * 100, 2) AS total_coverage_check,
 
-    -- Check: Summe von Versicherungsleistung + Patientenzahlung = Gesamtkosten?
-    ROUND(((insurance_coverage + patient_payment) / total_cost) * 100, 2) AS total_coverage_check
-
-FROM 
-    `dataforge`.`fact_appointments`
+    dd.weekday_type,
+    dd.year,
+    dd.month,
+    dd.`year_month`
+FROM
+    `dataforge`.`fact_appointments` fa
+LEFT JOIN 
+    `dataforge`.`dim_date` dd
+    ON fa.appointment_date = dd.date_day
 WHERE
     total_cost > 0
