@@ -27,6 +27,7 @@ Daten automatisiert erfassen, speichern, transformieren – und das cloudbasiert
                                                   |  - dim_dentist        |
                                                   |  - dim_treatment      |
                                                   |  - appointment_financials |
+                                                  |  - dim_date           |
                                                   +------------------+
                                                          ↓
                                                  [Power BI / QS]
@@ -104,8 +105,10 @@ python insert_data.py --records 10 --table all
 - [x] Transformationen & Datenaufwertung mit dbt
 - [x] Aufbau eines Mini-Data Warehouses (Fact & Dimensions)
 - [x] Erstellung eines KPI-Views (appointment_financials) mit dbt
+- [x] Visualisierung mit Power BI oder QuickSight
 - [ ] CI/CD Pipeline mit GitHub Actions
 - [ ] Visuelle Architektur-Doku (draw.io)
+- [ ] Verbindung von QuickSight zur RDS über VPC-Verbindung finalisieren
 
 ### 🧭 Geplante Erweiterungen (Phase 2 – reloaded)
 
